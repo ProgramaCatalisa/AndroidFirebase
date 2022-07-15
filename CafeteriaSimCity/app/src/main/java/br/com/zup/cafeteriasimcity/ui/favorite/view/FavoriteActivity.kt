@@ -3,11 +3,18 @@ package br.com.zup.cafeteriasimcity.ui.favorite.view
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.com.zup.cafeteriasimcity.databinding.ActivityFavoriteBinding
+import br.com.zup.cafeteriasimcity.ui.favorite.viewmodel.FavoriteViewModel
 
 class FavoriteActivity : AppCompatActivity() {
     private lateinit var binding: ActivityFavoriteBinding
+
+    private val viewModel: FavoriteViewModel by lazy {
+        ViewModelProvider(this)[FavoriteViewModel::class.java]
+    }
 
     private val adapter: FavoriteAdapter by lazy {
         FavoriteAdapter(arrayListOf(), ::removeFavoriteImage)
@@ -19,7 +26,9 @@ class FavoriteActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        viewModel.getListFavorite()
         setUpRecyclerView()
+        initObservers()
     }
 
     private fun setUpRecyclerView() {
@@ -27,7 +36,22 @@ class FavoriteActivity : AppCompatActivity() {
         binding.rvImageCoffee.adapter = adapter
     }
 
+    private fun initObservers() {
+        viewModel.favoriteListState.observe(this) {
+            adapter.updateMovieList(it.toMutableList())
+        }
+
+        viewModel.messageState.observe(this) {
+            loadMessage(it)
+        }
+    }
+
+    private fun loadMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
     private fun removeFavoriteImage(image: String) {
+        viewModel.removeImageFavorite(image)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
